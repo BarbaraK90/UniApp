@@ -91,24 +91,29 @@ class LectureView:
 
     def handle_edit_entry_return(self, _even):
         value = self.edit_entry.get()
-        try:
-            points = float(value)
-        except ValueError:
-            messagebox.showerror("Błąd", "Nieprawidłowa wartość!")
-            return
-
-        self.tree.set(self.edited_row, self.edited_column, value)
 
         colloquium_result: ColloquiumResult | None = self.get_colloquim_result(self.edited_student_id, self.edited_colloquium_id)
-
-        if colloquium_result is None:
-            colloquium_result = ColloquiumResult(self.edited_colloquium_id, self.edited_student_id, points)
-            colloquium_result.insert(self.database_manager.conn)
-            self.colloquium_results[self.edited_student_id].append(colloquium_result)
+        if value == "":
+            if colloquium_result is not None:
+                colloquium_result.delete(self.database_manager.conn)
+                self.colloquium_results[self.edited_student_id].remove(colloquium_result)
         else:
-            colloquium_result.points = points
-            colloquium_result.update(self.database_manager.conn)
+            try:
+                points = float(value)
+            except ValueError:
+                messagebox.showerror("Błąd", "Nieprawidłowa wartość!")
+                return
 
+            if colloquium_result is not None:
+                colloquium_result.points = points
+                colloquium_result.update(self.database_manager.conn)
+            else:
+                colloquium_result = ColloquiumResult(self.edited_colloquium_id, self.edited_student_id, points)
+                colloquium_result.insert(self.database_manager.conn)
+                self.colloquium_results[self.edited_student_id].append(colloquium_result)
+
+
+        self.tree.set(self.edited_row, self.edited_column, value)
         self.remove_edit_entry()
 
     def handle_edit_entry_focus_out(self, _event):

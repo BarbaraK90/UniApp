@@ -19,8 +19,8 @@ class ColloquiumResult:
         conn.commit()
 
     def update(self, conn):
-        #if self.id is None:
-        #    raise ValueError("ID wyniki kolokwium muszą być ustawione, aby wykonać update.")
+        if self.colloquium_id is None or self.student_id is None:
+            raise ValueError("ID kolokwium i studenta muszą być ustawione, aby wykonać update.")
 
         cursor = conn.cursor()
         cursor.execute('''
@@ -31,6 +31,19 @@ class ColloquiumResult:
                 AND student_id = ?
         ''', (
             self.points,
+            self.colloquium_id,
+            self.student_id
+        ))
+        conn.commit()
+
+    def delete(self, conn):
+        if self.colloquium_id is None or self.student_id is None:
+            raise ValueError("ID kolokwium i studenta muszą być ustawione, aby wykonać delete.")
+
+        cursor = conn.cursor()
+        cursor.execute('''
+            DELETE FROM colloquium_results WHERE colloquium_id = ? AND student_id = ?
+        ''', (
             self.colloquium_id,
             self.student_id
         ))
