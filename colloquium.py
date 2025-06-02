@@ -25,7 +25,7 @@ class Colloquium:
 
         cursor = conn.cursor()
         cursor.execute('''
-            UPDATE colloqiums
+            UPDATE colloquiums
             SET name = ?,
                 lecture_id = ?
             WHERE id = ?
@@ -34,4 +34,12 @@ class Colloquium:
             self.lecture_id,
             self.id
         ))
+        conn.commit()
+
+    def delete(self, conn):
+        if self.id is None:
+            raise ValueError("ID kolokwium musi być ustawione, aby wykonać delete.")
+
+        cursor = conn.cursor()
+        cursor.execute('''DELETE FROM colloquiums WHERE id = ?''',(self.id,))
         conn.commit()

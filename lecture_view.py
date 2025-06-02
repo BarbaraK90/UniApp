@@ -10,6 +10,7 @@ from colloquium import Colloquium
 from colloquium_result import ColloquiumResult
 
 from add_colloquium_form import AddColloquiumForm
+from colloquium_list import ColloquiumList
 
 class LectureView:
     def __init__(self, master, database_manager: DatabaseManager, lecture_id: int):
@@ -33,13 +34,19 @@ class LectureView:
         self.reload()
         self.add_colloquium_form = AddColloquiumForm(self.frame, self.lecture_id, on_adding=self.handle_adding_colloquium)
         self.add_colloquium_form.pack()
+        self.colloquium_list = ColloquiumList(self.frame, self.database_manager, lecture_id, on_colloquium_deleted=self.handle_colloquium_deleted)
+        self.colloquium_list.pack()
 
     def pack(self):
         self.frame.pack(fill="both")
 
+    def handle_colloquium_deleted(self, colloquium):
+        self.reload()
+
     def handle_adding_colloquium(self, colloquium):
         colloquium.insert(self.database_manager.conn)
         self.reload()
+        self.colloquium_list.reload_colloquiums()
 
     def reload(self):
         self.load_data()
@@ -92,7 +99,7 @@ class LectureView:
     def handle_edit_entry_return(self, _even):
         value = self.edit_entry.get()
 
-        colloquium_result: ColloquiumResult | None = self.get_colloquim_result(self.edited_student_id, self.edited_colloquium_id)
+        colloquium_result: ColloquiumResult | None = self.get_colloquium_result(self.edited_student_id, self.edited_colloquium_id)
         if value == "":
             if colloquium_result is not None:
                 colloquium_result.delete(self.database_manager.conn)
@@ -166,7 +173,7 @@ class LectureView:
 
         return tree
 
-    def get_colloquim_result(self, student_id, colloquium_id):
+    def get_colloquium_result(self, student_id, colloquium_id):
         colloquium_results = self.colloquium_results[self.edited_student_id]
         return next(filter(lambda x: x.colloquium_id == colloquium_id, colloquium_results), None)
 
