@@ -2,23 +2,20 @@ import tkinter as tk
 from database_manager import DatabaseManager
 from colloquium import Colloquium
 
-class ColloquiumList:
+class ColloquiumList(tk.Frame):
     def __init__(self, master, database_manager: DatabaseManager, lecture_id: int, on_colloquium_deleted = None):
+        super().__init__(master)
         self.lecture_id = lecture_id
         self.database_manager: DatabaseManager = database_manager
         self.on_colloquium_deleted = on_colloquium_deleted
         self.colloquiums: list[Colloquium] | None = None
-        self.frame = tk.Frame(master)
-        self.listbox = tk.Listbox(self.frame)
+        self.listbox = tk.Listbox(self)
         self.listbox.pack()
-        self.actions_frame = tk.Frame(self.frame)
+        self.actions_frame = tk.Frame(self)
         self.actions_frame.pack()
         self.delete_button = tk.Button(self.actions_frame, text="Usuń", command=self.handle_delete_button_pressed)
         self.delete_button.pack(pady=10, side="left")
         self.reload_colloquiums()
-
-    def pack(self):
-        self.frame.pack()
 
     def reload_colloquiums(self):
         self.colloquiums = self.database_manager.get_colloquiums(self.lecture_id)

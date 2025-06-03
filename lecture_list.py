@@ -4,29 +4,34 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 
-class LectureList:
+class LectureList(tk.Frame):
     def __init__(self, master, database_manager: DatabaseManager, on_lecture_selected, on_lecture_deleted):
+        super().__init__(master)
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=1)
         self.database_manager: DatabaseManager = database_manager
         self.on_lecture_selected = on_lecture_selected
         self.on_lecture_deleted = on_lecture_deleted
         self.lectures: list[Lecture] = []
 
-        self.frame = tk.Frame(master)
-        self.actions_frame = tk.Frame(self.frame)
-        self.actions_frame.pack()
+        self.label = tk.Label(self, text="Wykłady")
+        self.label.grid(row=0, column=0)
+        #self.label.grid_propagate(False)
+        self.actions_frame = tk.Frame(self)
+        self.actions_frame.grid(row=2, column=0)
+        #self.actions_frame.grid_propagate(False)
         self.import_button = tk.Button(self.actions_frame, text="Import...", command=self.handle_import_button_pressed)
         self.import_button.pack(pady=10, side="left")
 
         self.delete_button = tk.Button(self.actions_frame, text="Usuń", command=self.handle_delete_button_pressed)
         self.delete_button.pack(pady=10, side="left")
 
-        self.listbox = tk.Listbox(self.frame)
-        self.listbox.pack(pady=10, padx=20, fill="both", expand=True)
+        self.listbox_frame = tk.Frame(self)
+        self.listbox_frame.grid(row=1, column=0, sticky="nsew")
+        self.listbox = tk.Listbox(self.listbox_frame)
+        self.listbox.pack(pady=10, padx=10, fill="both", expand=True)
         self.listbox.bind("<<ListboxSelect>>", self.handle_lecture_selected)
         pass
-
-    def pack(self):
-        self.frame.pack(fill="both")
 
     def handle_import_button_pressed(self):
         file_name = filedialog.askopenfilename(

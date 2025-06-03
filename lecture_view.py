@@ -12,8 +12,12 @@ from colloquium_result import ColloquiumResult
 from add_colloquium_form import AddColloquiumForm
 from colloquium_list import ColloquiumList
 
-class LectureView:
+class LectureView(tk.Frame):
     def __init__(self, master, database_manager: DatabaseManager, lecture_id: int):
+        super().__init__(master)
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=1)
+        self.grid_rowconfigure(3, weight=1)
         self.database_manager: DatabaseManager = database_manager
         self.lecture_id: int = lecture_id
         self.lecture: Lecture | None = None
@@ -25,20 +29,16 @@ class LectureView:
         self.edited_colloquium_id = None
         self.edit_entry: tk.Entry | None = None
         self.colloquium_results : dict[int, list[ColloquiumResult]] = {}
-        self.frame: tk.Frame = tk.Frame(master)
         self.tree: ttk.Treeview | None = None
-        self.lecture_label: tk.Label = tk.Label(self.frame)
-        self.lecture_label.pack()
-        self.tree_frame = tk.Frame(self.frame)
-        self.tree_frame.pack(fill="x")
+        self.lecture_label: tk.Label = tk.Label(self)
+        self.lecture_label.grid(row=0, column=0)
+        self.tree_frame = tk.Frame(self)
+        self.tree_frame.grid(row=1, column=0)
         self.reload()
-        self.add_colloquium_form = AddColloquiumForm(self.frame, self.lecture_id, on_adding=self.handle_adding_colloquium)
-        self.add_colloquium_form.pack()
-        self.colloquium_list = ColloquiumList(self.frame, self.database_manager, lecture_id, on_colloquium_deleted=self.handle_colloquium_deleted)
-        self.colloquium_list.pack()
-
-    def pack(self):
-        self.frame.pack(fill="both")
+        self.add_colloquium_form = AddColloquiumForm(self, self.lecture_id, on_adding=self.handle_adding_colloquium)
+        self.add_colloquium_form.grid(row=2, column=0)
+        self.colloquium_list = ColloquiumList(self, self.database_manager, lecture_id, on_colloquium_deleted=self.handle_colloquium_deleted)
+        self.colloquium_list.grid(row=3, column=0)
 
     def handle_colloquium_deleted(self, colloquium):
         self.reload()
@@ -101,6 +101,7 @@ class LectureView:
 
         colloquium_result: ColloquiumResult | None = self.get_colloquium_result(self.edited_student_id, self.edited_colloquium_id)
         if value == "":
+            self.tree.set(self.edited_row, self.edited_column, "")
             if colloquium_result is not None:
                 colloquium_result.delete(self.database_manager.conn)
                 self.colloquium_results[self.edited_student_id].remove(colloquium_result)
@@ -110,7 +111,7 @@ class LectureView:
             except ValueError:
                 messagebox.showerror("Błąd", "Nieprawidłowa wartość!")
                 return
-
+            self.tree.set(self.edited_row, self.edited_column, str(points))
             if colloquium_result is not None:
                 colloquium_result.points = points
                 colloquium_result.update(self.database_manager.conn)
@@ -119,8 +120,6 @@ class LectureView:
                 colloquium_result.insert(self.database_manager.conn)
                 self.colloquium_results[self.edited_student_id].append(colloquium_result)
 
-
-        self.tree.set(self.edited_row, self.edited_column, value)
         self.remove_edit_entry()
 
     def handle_edit_entry_focus_out(self, _event):
@@ -152,11 +151,17 @@ class LectureView:
             columns.append(f"c{colloquium.id}")
 
         tree = ttk.Treeview(self.tree_frame, columns=tuple(columns))
+        # Usunięcie nieużywanej pierwszej kolumny na id
+        tree['show'] = 'headings'
         tree.heading("name", text="Imię")
+        tree.column("name", minwidth=0, width=100)
         tree.heading("number", text="Numer")
+        tree.column("number", minwidth=0, width=100)
 
         for colloquium in self.colloquiums:
-            tree.heading(f"c{colloquium.id}", text=colloquium.name)
+            column_id = f"c{colloquium.id}";
+            tree.heading(column_id, text=colloquium.name)
+            tree.column(column_id, minwidth=0, width=75, stretch=False)
 
         for student in self.students:
             values = [student.name, student.album]
@@ -174,9 +179,6 @@ class LectureView:
         return tree
 
     def get_colloquium_result(self, student_id, colloquium_id):
+        # Pobieramy wynik kolokwium zapisany w self.colloquium_results
         colloquium_results = self.colloquium_results[self.edited_student_id]
         return next(filter(lambda x: x.colloquium_id == colloquium_id, colloquium_results), None)
-
-    def forget_and_destroy(self):
-        self.frame.pack_forget()
-        self.frame.destroy()

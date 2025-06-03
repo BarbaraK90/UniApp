@@ -1,19 +1,16 @@
 import tkinter as tk
 from colloquium import Colloquium
 
-class AddColloquiumForm:
+class AddColloquiumForm(tk.Frame):
     def __init__(self, master, lecture_id, on_adding = None):
+        super().__init__(master)
         self.lecture_id = lecture_id
         self.on_adding = on_adding
-        self.frame = tk.Frame(master)
-        tk.Label(self.frame, text="Dodaj kolokwium").pack()
-        self.input = tk.Entry(self.frame)
+        tk.Label(self, text="Dodaj kolokwium").pack()
+        self.input = tk.Entry(self)
         self.input.pack()
-        self.add_button = tk.Button(self.frame, text="Dodaj", command=self.handle_add_pressed)
+        self.add_button = tk.Button(self, text="Dodaj", command=self.handle_add_pressed)
         self.add_button.pack()
-
-    def pack(self):
-        self.frame.pack(fill="x")
 
     def handle_add_pressed(self):
         if self.on_adding is None:
