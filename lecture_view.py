@@ -40,7 +40,7 @@ class LectureView(tk.Frame):
         self.colloquium_list = ColloquiumList(self, self.database_manager, lecture_id, on_colloquium_deleted=self.handle_colloquium_deleted)
         self.colloquium_list.grid(row=3, column=0)
 
-    def handle_colloquium_deleted(self, colloquium):
+    def handle_colloquium_deleted(self, _colloquium):
         self.reload()
 
     def handle_adding_colloquium(self, colloquium):
@@ -65,7 +65,6 @@ class LectureView(tk.Frame):
 
         self.place_edit_entry()
 
-
     def handle_tree_double_click(self, event):
         region = self.tree.identify_region(event.x, event.y)
         if region != "cell":
@@ -73,8 +72,6 @@ class LectureView(tk.Frame):
 
         self.edited_column = self.tree.identify_column(event.x)
         self.edited_row = self.tree.identify_row(event.y)
-
-        print(self.edited_column, self.edited_row)
 
         # Odczytanie id kolokwium z heading
         columns = self.tree['columns']
@@ -122,6 +119,9 @@ class LectureView(tk.Frame):
 
         self.remove_edit_entry()
 
+        avg = self.get_student_avg(self.edited_student_id)
+        self.tree.set(self.edited_row, self.tree['columns'][-1], str(avg))
+
     def handle_edit_entry_focus_out(self, _event):
         self.remove_edit_entry()
 
@@ -150,6 +150,8 @@ class LectureView(tk.Frame):
         for colloquium in self.colloquiums:
             columns.append(f"c{colloquium.id}")
 
+        columns.append("avg")
+
         tree = ttk.Treeview(self.tree_frame, columns=tuple(columns))
         # Usunięcie nieużywanej pierwszej kolumny na id
         tree['show'] = 'headings'
@@ -157,9 +159,11 @@ class LectureView(tk.Frame):
         tree.column("name", minwidth=0, width=100)
         tree.heading("number", text="Numer")
         tree.column("number", minwidth=0, width=100)
+        tree.heading("avg", text="Średnia")
+        tree.column("avg", minwidth=0, width=75)
 
         for colloquium in self.colloquiums:
-            column_id = f"c{colloquium.id}";
+            column_id = f"c{colloquium.id}"
             tree.heading(column_id, text=colloquium.name)
             tree.column(column_id, minwidth=0, width=75, stretch=False)
 
@@ -173,12 +177,20 @@ class LectureView(tk.Frame):
                     values.append(colloquium_result.points)
                 else:
                     values.append("")
-
+            avg = self.get_student_avg(student.id)
+            values.append(avg)
             tree.insert("", tk.END, values=tuple(values))
 
         return tree
 
+    def get_student_avg(self, student_id):
+        total_points = 0
+        colloquium_results = self.colloquium_results[student_id]
+        for colloquium_result in colloquium_results:
+            total_points = total_points + colloquium_result.points
+        return total_points / len(self.colloquiums)
+
     def get_colloquium_result(self, student_id, colloquium_id):
         # Pobieramy wynik kolokwium zapisany w self.colloquium_results
-        colloquium_results = self.colloquium_results[self.edited_student_id]
+        colloquium_results = self.colloquium_results[student_id]
         return next(filter(lambda x: x.colloquium_id == colloquium_id, colloquium_results), None)
