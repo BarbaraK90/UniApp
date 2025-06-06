@@ -9,8 +9,12 @@ class AddColloquiumForm(tk.Frame):
         tk.Label(self, text="Dodaj kolokwium").pack()
         self.input = tk.Entry(self)
         self.input.pack()
+        self.input.bind("<Return>", self.handle_input_return)
         self.add_button = tk.Button(self, text="Dodaj", command=self.handle_add_pressed)
         self.add_button.pack()
+
+    def handle_input_return(self, _event):
+        self.handle_add_pressed()
 
     def handle_add_pressed(self):
         if self.on_adding is None:

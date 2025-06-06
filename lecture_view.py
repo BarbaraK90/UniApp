@@ -92,6 +92,7 @@ class LectureView(tk.Frame):
         self.edit_entry.insert(0, value)
         self.edit_entry.focus()
         self.edit_entry.bind("<Return>", self.handle_edit_entry_return)
+        self.edit_entry.bind("<Button-1>", self.handle_edit_entry_return)
         self.edit_entry.bind("<FocusOut>", self.handle_edit_entry_focus_out)
 
     def handle_edit_entry_return(self, _even):
