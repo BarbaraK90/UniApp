@@ -7,6 +7,8 @@ from lecture_view import LectureView
 from lecture_list import LectureList
 
 conn = sqlite3.connect("data.db")
+# Bez tego nie działają klucze obce
+conn.execute("PRAGMA foreign_keys = ON")
 database_manager = DatabaseManager(conn)
 database_manager.create_tables()
 

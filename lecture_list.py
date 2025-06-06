@@ -16,10 +16,8 @@ class LectureList(tk.Frame):
 
         self.label = tk.Label(self, text="Wykłady")
         self.label.grid(row=0, column=0)
-        #self.label.grid_propagate(False)
         self.actions_frame = tk.Frame(self)
         self.actions_frame.grid(row=2, column=0)
-        #self.actions_frame.grid_propagate(False)
         self.import_button = tk.Button(self.actions_frame, text="Import...", command=self.handle_import_button_pressed)
         self.import_button.pack(pady=10, side="left")
 
@@ -34,7 +32,7 @@ class LectureList(tk.Frame):
         pass
 
     def handle_import_button_pressed(self):
-        file_name = filedialog.askopenfilename(
+        file_name = filedialog.askopenfilename( # Otwieramy okno wyboru pliku
             title="Wybierz plik",
             filetypes=(("Pliki CSV", "*.csv"), ("Wszystkie pliki", "*.*"))
         )

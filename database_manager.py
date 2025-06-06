@@ -45,7 +45,7 @@ class DatabaseManager:
                 status TEXT,
                 email TEXT,
                 lecture_id INTEGER,
-                FOREIGN KEY(lecture_id) REFERENCES lectures(id)
+                FOREIGN KEY(lecture_id) REFERENCES lectures(id) ON DELETE CASCADE
             )
         ''')
 
@@ -55,7 +55,7 @@ class DatabaseManager:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT,
                 lecture_id INTEGER,
-                FOREIGN KEY(lecture_id) REFERENCES lectures(id)
+                FOREIGN KEY(lecture_id) REFERENCES lectures(id) ON DELETE CASCADE
             )
         ''')
 
@@ -66,8 +66,8 @@ class DatabaseManager:
                 student_id INTEGER,
                 points FLOAT,
                 PRIMARY KEY (student_id, colloquium_id),
-                FOREIGN KEY(student_id) REFERENCES students(id),
-                FOREIGN KEY(colloquium_id) REFERENCES colloquiums(id)
+                FOREIGN KEY(student_id) REFERENCES students(id) ON DELETE CASCADE,
+                FOREIGN KEY(colloquium_id) REFERENCES colloquiums(id) ON DELETE CASCADE
             )
         ''')
 
@@ -102,10 +102,11 @@ class DatabaseManager:
 
         lecture.insert(self.conn)
 
-        # Nagłówek studentów znajduje się na linii 11, dane studentów od linii 12
+        # Dodajemy 2, żeby pominąć pustą linię i nagłówek studentów
         for row in lines[i + 2:]:
             if len(row) < 6:
                 continue  # Pomijamy niekompletne linie
+            # Pomijamy kolumnę LP, która ma index 0
             name = row[1].strip().replace('"', '')
             album = row[2].strip().replace('"', '').strip('/')
             tok_id = row[3].strip().replace('"', '')
@@ -117,9 +118,9 @@ class DatabaseManager:
     def __get_students(self, where = "1 = 1", param: tuple = ()):
         cursor = self.conn.cursor()
         cursor.execute("SELECT name, album, tok_id, status, email, lecture_id, id  FROM students WHERE " + where, param)
-        rows = cursor.fetchall()
+        rows = cursor.fetchall() #pobiera wszystkie wiersze
 
-        students = [Student(*row) for row in rows]
+        students = [Student(*row) for row in rows] # mapowanie wierszy na obiekty student
 
         return students
 

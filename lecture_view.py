@@ -53,6 +53,7 @@ class LectureView(tk.Frame):
         self.lecture_label.config(text=self.get_label_text())
         if self.tree is not None:
             self.tree.forget()
+            self.tree.destroy()
 
         self.tree = self.get_tree()
         self.tree.bind("<Double-1>", self.handle_tree_double_click)
@@ -141,9 +142,10 @@ class LectureView(tk.Frame):
         self.lecture = self.database_manager.get_lecture(self.lecture_id)
         self.students = self.database_manager.get_students(self.lecture_id)
         self.colloquiums = self.database_manager.get_colloquiums(self.lecture_id)
+        self.colloquium_results = {}
 
     def get_label_text(self):
-        return self.lecture.name
+        return f"{self.lecture.department} - {self.lecture.name}"
 
     def get_tree(self):
         columns = ["name", "number"]
@@ -186,9 +188,12 @@ class LectureView(tk.Frame):
     def get_student_avg(self, student_id):
         total_points = 0
         colloquium_results = self.colloquium_results[student_id]
+        colloquium_count = len(self.colloquiums)
+        if colloquium_count == 0:
+            return ""
         for colloquium_result in colloquium_results:
             total_points = total_points + colloquium_result.points
-        return total_points / len(self.colloquiums)
+        return total_points / colloquium_count
 
     def get_colloquium_result(self, student_id, colloquium_id):
         # Pobieramy wynik kolokwium zapisany w self.colloquium_results
